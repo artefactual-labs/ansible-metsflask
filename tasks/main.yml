@@ -1,0 +1,54 @@
+---
+# tasks file for ansible-metsflask
+
+- name: Create metsflask group
+  group:
+    name: "metsflask"
+    system: yes
+
+- name: Create metsflask user
+  user: 
+    name: "metsflask"
+    home: "/opt/metsflask"
+    create_home: "no"
+    shell: "/bin/false"
+    system: yes
+    group: "metsflask"
+
+- name: Create base directory for the application
+  file:
+    path: "/opt/metsflask"
+    state: directory
+
+- name: Clone metsflask repository
+  git:
+    repo: "https://github.com/tw4l/METSFlask"
+    dest: "/opt/metsflash/src"
+    version: "main"
+
+- name: Create virtualenv
+  pip:
+    chdir: "/opt/metsflash/src"
+    requirements: "requirements.txt"
+    virtualenv: "/opt/metsflask/venv"
+    virtualenv_command: "/usr/bin/python3 -m venv"
+
+- name: Change permissions for application directories
+  file:
+    path: "/opt/metsflask"
+    state: directory
+    recurse: yes
+    owner: metsflask
+    group:
+
+- name: Create systemd config file
+  template:
+    src: "etc/systemd/system/metsflask.service"
+    dest: "/etc/systemd/system/metsflask.service"
+
+- name: "Enable service"
+  systemd:
+    name: "metsflask"
+    state: "started"
+    enabled: "yes"
+    daemon_reload: "yes"

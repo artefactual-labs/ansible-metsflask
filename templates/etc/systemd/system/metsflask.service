@@ -1,0 +1,12 @@
+[Unit]
+Description=METSFlask
+After=network.target
+
+[Service]
+User=metsflask
+Group=metsflask
+WorkingDirectory=/opt/metsflask/src
+ExecStart=/opt/metsflask/venv/bin/python3 run.py
+
+[Install]
+WantedBy=multi-user.target
