@@ -1,6 +1,12 @@
 ---
 # tasks file for ansible-metsflask
 
+- name: "Ensure python3-venv is installed (Ubuntu)"
+  apt:
+    name: "python3-venv"
+    state: "present"
+  when: ansible_os_family == 'Debian'
+
 - name: Create metsflask group
   group:
     name: "metsflask"
@@ -23,12 +29,12 @@
 - name: Clone metsflask repository
   git:
     repo: "https://github.com/tw4l/METSFlask"
-    dest: "/opt/metsflash/src"
+    dest: "/opt/metsflask/src"
     version: "main"
 
 - name: Create virtualenv
   pip:
-    chdir: "/opt/metsflash/src"
+    chdir: "/opt/metsflask/src"
     requirements: "requirements.txt"
     virtualenv: "/opt/metsflask/venv"
     virtualenv_command: "/usr/bin/python3 -m venv"
@@ -39,12 +45,18 @@
     state: directory
     recurse: yes
     owner: metsflask
-    group:
+    group: metsflask
 
 - name: Create systemd config file
   template:
     src: "etc/systemd/system/metsflask.service"
     dest: "/etc/systemd/system/metsflask.service"
+
+- name: Initialize database
+  command:
+    cmd: "/opt/metsflask/venv/bin/python3 db_create.py"
+    chdir: "/opt/metsflask/src"
+  tags: metsflask-initdb
 
 - name: "Enable service"
   systemd:
