@@ -56,6 +56,9 @@
   command:
     cmd: "/opt/metsflask/venv/bin/python3 db_create.py"
     chdir: "/opt/metsflask/src"
+  become: yes
+  become_user: metsflask
+  when: metsflask_initdb | bool
   tags: metsflask-initdb
 
 - name: "Enable service"
